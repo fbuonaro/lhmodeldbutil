@@ -11,7 +11,7 @@ LABEL lhmodeldbutil-stage-main="no"
 # okay repo is for gtest/gmock 1.8, 1.6 is permanently broken
 RUN yum -y --enablerepo=extras install epel-release && \
     yum -y install https://repo.ius.io/ius-release-el7.rpm && \
-    yum -y install http://repo.okay.com.mx/centos/7/x86_64/release/okay-release-1-1.noarch.rpm && \
+    yum -y install http://repo.okay.com.mx/centos/7/x86_64/release/okay-release-1-5.el7.noarch.rpm && \
     yum clean all
 
 ##################################################################################

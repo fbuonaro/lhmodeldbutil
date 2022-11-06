@@ -19,6 +19,7 @@ namespace LHModelDbUtilNS
     template<>
     void defaultBind( cppdb::statement& s, int placeholderIndex, const LHModelDbUtilTestNS::PointInTime& pit )
     {
+        (void)pit;
         s.bind( placeholderIndex, 1234 );
     }
 
@@ -31,6 +32,7 @@ namespace LHModelDbUtilNS
     template<>
     void defaultFetch( cppdb::result& r, const std::string& name, LHModelDbUtilTestNS::PointInTime& pit )
     {
+        (void)pit;
         std::string pitString;
         r.fetch( name, pitString );
     }
@@ -63,12 +65,13 @@ namespace LHModelDbUtilTestNS
 
         std::unique_ptr< MockDriver > mockDriver( new MockDriver() );
         EXPECT_CALL( *mockDriver, open( ::testing::_ ) )
-        .WillOnce( ::testing::Invoke( [ &exModelA1, &exModelA2 ]( const cppdb::connection_info& ci )
+            .WillOnce( ::testing::Invoke( [&exModelA1, &exModelA2]( const cppdb::connection_info& ci )
         {
             std::unique_ptr< MockConnection > mockConnection( new MockConnection( ci ) );
             EXPECT_CALL( *mockConnection, create_statement( ::testing::_ ) )
-            .WillOnce( ::testing::Invoke( [ &exModelA1, &exModelA2 ]( const std::string& statementStr )
+                .WillOnce( ::testing::Invoke( [&exModelA1, &exModelA2]( const std::string& statementStr )
             {
+                (void)statementStr;
                 std::unique_ptr< MockStatement > mockStatement( new MockStatement() );
                 EXPECT_CALL( *mockStatement, bind( 1, ::testing::TypedEq< decltype( exModelA1.pid ) >( exModelA1.pid ) ) );
                 EXPECT_CALL( *mockStatement, bind( 2, ::testing::TypedEq< int >( 1234 ) ) );
@@ -76,8 +79,9 @@ namespace LHModelDbUtilTestNS
                 EXPECT_CALL( *mockStatement, bind( 4, ::testing::TypedEq< int >( exModelA1.enabled ) ) );
                 return mockStatement.release();
             } ) )
-            .WillOnce( ::testing::Invoke( [ &exModelA1, &exModelA2 ]( const std::string& statementStr )
+                .WillOnce( ::testing::Invoke( [&exModelA1, &exModelA2]( const std::string& statementStr )
             {
+                (void)statementStr;
                 std::unique_ptr< MockStatement > mockStatement( new MockStatement() );
                 EXPECT_CALL( *mockStatement, bind( 1, ::testing::TypedEq< decltype( exModelA1.pid ) >( exModelA1.pid ) ) );
                 EXPECT_CALL( *mockStatement, bind( 2, ::testing::TypedEq< int >( 1234 ) ) );
@@ -121,12 +125,13 @@ namespace LHModelDbUtilTestNS
 
         std::unique_ptr< MockDriver > mockDriver( new MockDriver() );
         EXPECT_CALL( *mockDriver, open( ::testing::_ ) )
-        .WillOnce( ::testing::Invoke( [ &exModelA1, &exModelA2 ]( const cppdb::connection_info& ci )
+            .WillOnce( ::testing::Invoke( [&exModelA1, &exModelA2]( const cppdb::connection_info& ci )
         {
             std::unique_ptr< MockConnection > mockConnection( new MockConnection( ci ) );
             EXPECT_CALL( *mockConnection, create_statement( ::testing::_ ) )
-            .WillOnce( ::testing::Invoke( [ &exModelA1, &exModelA2 ]( const std::string& statementStr )
+                .WillOnce( ::testing::Invoke( [&exModelA1, &exModelA2]( const std::string& statementStr )
             {
+                (void)statementStr;
                 std::unique_ptr< MockStatement > mockStatement( new MockStatement() );
                 EXPECT_CALL( *mockStatement, bind( 1, ::testing::TypedEq< decltype( exModelA1.pid ) >( exModelA1.pid ) ) );
                 EXPECT_CALL( *mockStatement, bind( 2, ::testing::TypedEq< int >( 1234 ) ) );
@@ -134,8 +139,9 @@ namespace LHModelDbUtilTestNS
                 EXPECT_CALL( *mockStatement, bind( 4, ::testing::TypedEq< int >( exModelA1.enabled ) ) );
                 return mockStatement.release();
             } ) )
-            .WillOnce( ::testing::Invoke( [ &exModelA1, &exModelA2 ]( const std::string& statementStr )
+                .WillOnce( ::testing::Invoke( [&exModelA1, &exModelA2]( const std::string& statementStr )
             {
+                (void)statementStr;
                 std::unique_ptr< MockStatement > mockStatement( new MockStatement() );
                 EXPECT_CALL( *mockStatement, bind( 1, ::testing::TypedEq< decltype( exModelA1.pid ) >( exModelA1.pid ) ) );
                 EXPECT_CALL( *mockStatement, bind( 2, ::testing::TypedEq< int >( 1234 ) ) );
@@ -156,7 +162,7 @@ namespace LHModelDbUtilTestNS
         cppdb::statement cppdbStatement1( cppdbSession.create_statement( "NOT A REAL STATEMENT CASE 1" ) );
         cppdb::statement cppdbStatement2( cppdbSession.create_statement( "NOT A REAL STATEMENT CASE 2" ) );
 
-        LHModelDbUtilNS::BindToStatement( exModelAs.begin(), exModelAs.begin()+1, cppdbStatement1 );
+        LHModelDbUtilNS::BindToStatement( exModelAs.begin(), exModelAs.begin() + 1, cppdbStatement1 );
         LHModelDbUtilNS::BindToStatement( exModelAs.begin(), exModelAs.end(), cppdbStatement2 );
     }
 
@@ -176,21 +182,22 @@ namespace LHModelDbUtilTestNS
         std::vector< std::string > allMembers;
         std::vector< std::string > someMembers{ "pid", "token" };
 
-        for( auto it = LHModelNS::ModelMembersMeta< ExampleModelA >::membersMeta.cbegin();
-             it != LHModelNS::ModelMembersMeta< ExampleModelA >::membersMeta.cend();
-             ++it )
+        for ( auto it = LHModelNS::ModelMembersMeta< ExampleModelA >::membersMeta.cbegin();
+            it != LHModelNS::ModelMembersMeta< ExampleModelA >::membersMeta.cend();
+            ++it )
         {
             allMembers.push_back( it->name );
         }
 
         std::unique_ptr< MockDriver > mockDriver( new MockDriver() );
         EXPECT_CALL( *mockDriver, open( ::testing::_ ) )
-        .WillOnce( ::testing::Invoke( [ &exModelA1, &exModelA2 ]( const cppdb::connection_info& ci )
+            .WillOnce( ::testing::Invoke( [&exModelA1, &exModelA2]( const cppdb::connection_info& ci )
         {
             std::unique_ptr< MockConnection > mockConnection( new MockConnection( ci ) );
             EXPECT_CALL( *mockConnection, create_statement( ::testing::_ ) )
-            .WillOnce( ::testing::Invoke( [ &exModelA1, &exModelA2 ]( const std::string& statementStr )
+                .WillOnce( ::testing::Invoke( [&exModelA1, &exModelA2]( const std::string& statementStr )
             {
+                (void)statementStr;
                 std::unique_ptr< MockStatement > mockStatement( new MockStatement() );
                 EXPECT_CALL( *mockStatement, bind( 1, ::testing::TypedEq< decltype( exModelA1.pid ) >( exModelA1.pid ) ) );
                 EXPECT_CALL( *mockStatement, bind( 2, ::testing::TypedEq< int >( 1234 ) ) );
@@ -198,8 +205,9 @@ namespace LHModelDbUtilTestNS
                 EXPECT_CALL( *mockStatement, bind( 4, ::testing::TypedEq< int >( exModelA1.enabled ) ) );
                 return mockStatement.release();
             } ) )
-            .WillOnce( ::testing::Invoke( [ &exModelA1, &exModelA2 ]( const std::string& statementStr )
+                .WillOnce( ::testing::Invoke( [&exModelA1, &exModelA2]( const std::string& statementStr )
             {
+                (void)statementStr;
                 std::unique_ptr< MockStatement > mockStatement( new MockStatement() );
                 EXPECT_CALL( *mockStatement, bind( 1, ::testing::TypedEq< decltype( exModelA2.pid ) >( exModelA2.pid ) ) );
                 EXPECT_CALL( *mockStatement, bind( 2, ::testing::TypedEq< const std::string& >( exModelA2.token ) ) );
@@ -215,17 +223,17 @@ namespace LHModelDbUtilTestNS
         cppdb::statement cppdbStatement2( cppdbSession.create_statement( "NOT A REAL STATEMENT CASE 2" ) );
 
         LHModelDbUtilNS::BindMembersToStatement( exModelA1,
-                                                 allMembers.cbegin(),
-                                                 allMembers.cend(),
-                                                 cppdbStatement1 );
+            allMembers.cbegin(),
+            allMembers.cend(),
+            cppdbStatement1 );
 
         LHModelDbUtilNS::BindMembersToStatement( exModelA1,
-                                                 noMembers.cbegin(), noMembers.cend(),
-                                                 cppdbStatement2 );
+            noMembers.cbegin(), noMembers.cend(),
+            cppdbStatement2 );
 
         LHModelDbUtilNS::BindMembersToStatement( exModelA2,
-                                                 someMembers.cbegin(), someMembers.cend(),
-                                                 cppdbStatement2 );
+            someMembers.cbegin(), someMembers.cend(),
+            cppdbStatement2 );
     }
 
     TEST( TestLHModelCppdb, TestBindMembersToStatementRange )
@@ -247,17 +255,19 @@ namespace LHModelDbUtilTestNS
 
         std::unique_ptr< MockDriver > mockDriver( new MockDriver() );
         EXPECT_CALL( *mockDriver, open( ::testing::_ ) )
-        .WillOnce( ::testing::Invoke( [ &exModelA1, &exModelA2 ]( const cppdb::connection_info& ci )
+            .WillOnce( ::testing::Invoke( [&exModelA1, &exModelA2]( const cppdb::connection_info& ci )
         {
             std::unique_ptr< MockConnection > mockConnection( new MockConnection( ci ) );
             EXPECT_CALL( *mockConnection, create_statement( ::testing::_ ) )
-            .WillOnce( ::testing::Invoke( [ &exModelA1, &exModelA2 ]( const std::string& statementStr )
+                .WillOnce( ::testing::Invoke( [&exModelA1, &exModelA2]( const std::string& statementStr )
             {
+                (void)statementStr;
                 std::unique_ptr< MockStatement > mockStatement( new MockStatement() );
                 return mockStatement.release();
             } ) )
-            .WillOnce( ::testing::Invoke( [ &exModelA1, &exModelA2 ]( const std::string& statementStr )
+                .WillOnce( ::testing::Invoke( [&exModelA1, &exModelA2]( const std::string& statementStr )
             {
+                (void)statementStr;
                 std::unique_ptr< MockStatement > mockStatement( new MockStatement() );
                 EXPECT_CALL( *mockStatement, bind( 1, ::testing::TypedEq< decltype( exModelA1.pid ) >( exModelA1.pid ) ) );
                 EXPECT_CALL( *mockStatement, bind( 2, ::testing::TypedEq< const std::string& >( exModelA1.token ) ) );
@@ -274,30 +284,30 @@ namespace LHModelDbUtilTestNS
         cppdb::statement cppdbStatement1( cppdbSession.create_statement( "NOT A REAL STATEMENT CASE 1" ) );
         cppdb::statement cppdbStatement2( cppdbSession.create_statement( "NOT A REAL STATEMENT CASE 2" ) );
 
-        LHModelDbUtilNS::BindMembersToStatement( exModelAs.begin(), exModelAs.begin()+1,
-                                                 noMembers.cbegin(), noMembers.cend(),
-                                                 cppdbStatement1 );
+        LHModelDbUtilNS::BindMembersToStatement( exModelAs.begin(), exModelAs.begin() + 1,
+            noMembers.cbegin(), noMembers.cend(),
+            cppdbStatement1 );
         LHModelDbUtilNS::BindMembersToStatement( exModelAs.begin(), exModelAs.end(),
-                                                 someMembers.cbegin(), someMembers.cend(),
-                                                 cppdbStatement2 );
+            someMembers.cbegin(), someMembers.cend(),
+            cppdbStatement2 );
     }
 
-namespace
-{
-    int nameToIndex( const std::string& name )
+    namespace
     {
-        if( name == "pid" )
-            return 0;
-        else if( name == "pit" )
-            return 1;
-        else if( name == "token" )
-            return 2;
-        else if( name == "enabled" )
-            return 3;
+        int nameToIndex( const std::string& name )
+        {
+            if ( name == "pid" )
+                return 0;
+            else if ( name == "pit" )
+                return 1;
+            else if ( name == "token" )
+                return 2;
+            else if ( name == "enabled" )
+                return 3;
 
-        return -1;
+            return -1;
+        }
     }
-}
 
     TEST( TestLHModelCppdb, TestQueryFromStatementSingle )
     {
@@ -306,53 +316,54 @@ namespace
 
         std::unique_ptr< MockDriver > mockDriver( new MockDriver() );
         EXPECT_CALL( *mockDriver, open( ::testing::_ ) )
-        .WillOnce( ::testing::Invoke( [ &exModelA1, &exModelA2 ]( const cppdb::connection_info& ci )
+            .WillOnce( ::testing::Invoke( [&exModelA1, &exModelA2]( const cppdb::connection_info& ci )
         {
             std::unique_ptr< MockConnection > mockConnection( new MockConnection( ci ) );
             EXPECT_CALL( *mockConnection, create_statement( ::testing::_ ) )
-            .WillOnce( ::testing::Invoke( [ &exModelA1, &exModelA2 ]( const std::string& statementStr )
+                .WillOnce( ::testing::Invoke( [&exModelA1, &exModelA2]( const std::string& statementStr )
             {
+                (void)statementStr;
                 std::unique_ptr< MockStatement > mockStatement( new MockStatement() );
                 EXPECT_CALL( *mockStatement, query() )
-                .WillOnce( ::testing::Invoke( [ &exModelA1, &exModelA2 ]()
+                    .WillOnce( ::testing::Invoke( [&exModelA1, &exModelA2]()
                 {
                     std::unique_ptr< MockResult > mockResult( new MockResult() );
 
                     EXPECT_CALL( *mockResult, name_to_column( ::testing::_ ) )
-                    .Times( 8 )
-                    .WillRepeatedly( ::testing::Invoke( nameToIndex ) );
+                        .Times( 8 )
+                        .WillRepeatedly( ::testing::Invoke( nameToIndex ) );
 
                     EXPECT_CALL( *mockResult, fetch( 0,
-                                                     ::testing::SafeMatcherCast< unsigned long& >(
-                                                        ::testing::Ref( exModelA1.pid ) ) ) )
-                    .WillOnce( ::testing::Return( true ) );
+                        ::testing::SafeMatcherCast< unsigned long& >(
+                            ::testing::Ref( exModelA1.pid ) ) ) )
+                        .WillOnce( ::testing::Return( true ) );
 
-                    EXPECT_CALL( *mockResult, fetch( 2, 
-                                                     ::testing::SafeMatcherCast< std::string& >(
-                                                        ::testing::Ref( exModelA1.token ) ) ) )
-                    .WillOnce( ::testing::Return( true ) );
+                    EXPECT_CALL( *mockResult, fetch( 2,
+                        ::testing::SafeMatcherCast< std::string& >(
+                            ::testing::Ref( exModelA1.token ) ) ) )
+                        .WillOnce( ::testing::Return( true ) );
 
-                    EXPECT_CALL( *mockResult, fetch( 0, 
-                                                     ::testing::SafeMatcherCast< unsigned long& >(
-                                                        ::testing::Ref( exModelA2.pid ) ) ) )
-                    .WillOnce( ::testing::Return( true ) );
+                    EXPECT_CALL( *mockResult, fetch( 0,
+                        ::testing::SafeMatcherCast< unsigned long& >(
+                            ::testing::Ref( exModelA2.pid ) ) ) )
+                        .WillOnce( ::testing::Return( true ) );
 
-                    EXPECT_CALL( *mockResult, fetch( 2, 
-                                                     ::testing::SafeMatcherCast< std::string& >(
-                                                        ::testing::Ref( exModelA2.token ) ) ) )
-                    .WillOnce( ::testing::Return( true ) );
+                    EXPECT_CALL( *mockResult, fetch( 2,
+                        ::testing::SafeMatcherCast< std::string& >(
+                            ::testing::Ref( exModelA2.token ) ) ) )
+                        .WillOnce( ::testing::Return( true ) );
 
                     EXPECT_CALL( *mockResult, fetch( 1, ::testing::A< std::string& >() ) )
-                    .Times( 2 )
-                    .WillRepeatedly( ::testing::Return( true ) );
+                        .Times( 2 )
+                        .WillRepeatedly( ::testing::Return( true ) );
 
                     EXPECT_CALL( *mockResult, fetch( 3, ::testing::An< int& >() ) )
-                    .Times( 2 )
-                    .WillRepeatedly( ::testing::Return( true ) );
+                        .Times( 2 )
+                        .WillRepeatedly( ::testing::Return( true ) );
 
                     EXPECT_CALL( *mockResult, next() )
-                    .Times( 2 )
-                    .WillRepeatedly( ::testing::Return( true ) );
+                        .Times( 2 )
+                        .WillRepeatedly( ::testing::Return( true ) );
 
                     return mockResult.release();
                 } ) );
@@ -368,9 +379,9 @@ namespace
         cppdb::statement cppdbStatement1( cppdbSession.create_statement( "NOT A REAL STATEMENT CASE 1" ) );
         cppdb::result cppdbResult1( cppdbStatement1.query() );
 
-        if( cppdbResult1.next() )
+        if ( cppdbResult1.next() )
             LHModelDbUtilNS::FetchFromResult( exModelA1, cppdbResult1 );
-        if( cppdbResult1.next() )
+        if ( cppdbResult1.next() )
             LHModelDbUtilNS::FetchFromResult( exModelA2, cppdbResult1 );
     }
 
@@ -380,42 +391,43 @@ namespace
 
         std::unique_ptr< MockDriver > mockDriver( new MockDriver() );
         EXPECT_CALL( *mockDriver, open( ::testing::_ ) )
-        .WillOnce( ::testing::Invoke( []( const cppdb::connection_info& ci )
+            .WillOnce( ::testing::Invoke( []( const cppdb::connection_info& ci )
         {
             std::unique_ptr< MockConnection > mockConnection( new MockConnection( ci ) );
             EXPECT_CALL( *mockConnection, create_statement( ::testing::_ ) )
-            .WillOnce( ::testing::Invoke( []( const std::string& statementStr )
+                .WillOnce( ::testing::Invoke( []( const std::string& statementStr )
             {
+                (void)statementStr;
                 std::unique_ptr< MockStatement > mockStatement( new MockStatement() );
                 EXPECT_CALL( *mockStatement, query() )
-                .WillOnce( ::testing::Invoke( []()
+                    .WillOnce( ::testing::Invoke( []()
                 {
                     std::unique_ptr< MockResult > mockResult( new MockResult() );
 
                     EXPECT_CALL( *mockResult, name_to_column( ::testing::_ ) )
-                    .Times( 8 )
-                    .WillRepeatedly( ::testing::Invoke( nameToIndex ) );
+                        .Times( 8 )
+                        .WillRepeatedly( ::testing::Invoke( nameToIndex ) );
 
                     EXPECT_CALL( *mockResult, fetch( 0, ::testing::An< unsigned long& >() ) )
-                    .WillOnce( ::testing::DoAll( ::testing::SetArgReferee<1>( 123 ), ::testing::Return( true ) ) )
-                    .WillOnce( ::testing::DoAll( ::testing::SetArgReferee<1>( 456 ), ::testing::Return( true ) ) );
+                        .WillOnce( ::testing::DoAll( ::testing::SetArgReferee<1>( 123 ), ::testing::Return( true ) ) )
+                        .WillOnce( ::testing::DoAll( ::testing::SetArgReferee<1>( 456 ), ::testing::Return( true ) ) );
 
                     EXPECT_CALL( *mockResult, fetch( 1, ::testing::A< std::string& >() ) )
-                    .WillOnce( ::testing::Return( true ) )
-                    .WillOnce( ::testing::Return( true ) );
+                        .WillOnce( ::testing::Return( true ) )
+                        .WillOnce( ::testing::Return( true ) );
 
                     EXPECT_CALL( *mockResult, fetch( 2, ::testing::A< std::string& >() ) )
-                    .WillOnce( ::testing::DoAll( ::testing::SetArgReferee<1>( "a" ), ::testing::Return( true ) ) )
-                    .WillOnce( ::testing::DoAll( ::testing::SetArgReferee<1>( "b" ), ::testing::Return( true ) ) );
+                        .WillOnce( ::testing::DoAll( ::testing::SetArgReferee<1>( "a" ), ::testing::Return( true ) ) )
+                        .WillOnce( ::testing::DoAll( ::testing::SetArgReferee<1>( "b" ), ::testing::Return( true ) ) );
 
                     EXPECT_CALL( *mockResult, fetch( 3, ::testing::An< int& >() ) )
-                    .WillOnce( ::testing::DoAll( ::testing::SetArgReferee<1>( 1 ), ::testing::Return( true ) ) )
-                    .WillOnce( ::testing::DoAll( ::testing::SetArgReferee<1>( 0 ), ::testing::Return( true ) ) );
+                        .WillOnce( ::testing::DoAll( ::testing::SetArgReferee<1>( 1 ), ::testing::Return( true ) ) )
+                        .WillOnce( ::testing::DoAll( ::testing::SetArgReferee<1>( 0 ), ::testing::Return( true ) ) );
 
                     EXPECT_CALL( *mockResult, next() )
-                    .WillOnce( ::testing::Return( true ) )
-                    .WillOnce( ::testing::Return( true ) )
-                    .WillOnce( ::testing::Return( false ) );
+                        .WillOnce( ::testing::Return( true ) )
+                        .WillOnce( ::testing::Return( true ) )
+                        .WillOnce( ::testing::Return( false ) );
 
                     return mockResult.release();
                 } ) );

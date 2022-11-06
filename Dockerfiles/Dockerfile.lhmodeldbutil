@@ -1,0 +1,115 @@
+################################################################################## 
+# STAGE 0 - base environment with first set of runtime dependencies 
+##################################################################################
+ARG BUILD_TAG
+ARG GIT_COMMIT
+
+FROM centos:centos7 as lhmodeldbutil-base-env
+
+# okay repo is for gtest/gmock 1.8, 1.6 is permanently broken
+RUN yum -y --enablerepo=extras install epel-release && \
+    yum -y install https://repo.ius.io/ius-release-el7.rpm && \
+    yum -y install http://repo.okay.com.mx/centos/7/x86_64/release/okay-release-1-5.el7.noarch.rpm && \
+    yum clean all
+
+##################################################################################
+# STAGE 1 - build tools and libraries needed to build lhmodeldbutil
+##################################################################################
+### deps ###
+FROM lhmodel:dist-${BUILD_TAG} AS lhmodel_dist_build
+FROM libcppdb-lhdist:dist-${BUILD_TAG} AS libcppdb_lhdist_dist_build
+### deps ###
+FROM lhmodeldbutil-base-env as lhmodeldbutil-build-env
+
+# for compiling and unit testing
+# x86_64 versions from okay repo for gmock/gtest 1.8
+RUN yum -y install \
+        cmake3 \
+        gcc \
+        gcc-c++ \
+        gtest-devel.x86_64 \
+        gmock-devel.x86_64 \
+        make \
+        rpm-build && \
+    yum clean all
+
+ADD ./modules/lhscriptutil/scripts/refreshOrSetupLHDistYumRepo.sh /refreshOrSetupLHDistYumRepo.sh
+RUN /refreshOrSetupLHDistYumRepo.sh
+
+COPY --from=lhmodel_dist_build /lhdist/*.rpm /lhdist/
+COPY --from=libcppdb_lhdist_dist_build /lhdist/*.rpm /lhdist/
+RUN /refreshOrSetupLHDistYumRepo.sh
+
+RUN yum -y repo-pkgs lhdistrepo install && \
+    ldconfig && \
+    yum clean all
+
+ENTRYPOINT [ "bash" ]
+
+##################################################################################
+# STAGE 2 - the lhmodeldbutil source and compiled binaries
+##################################################################################
+FROM lhmodeldbutil-build-env as lhmodeldbutil-build
+
+ADD . /lhmodeldbutil
+RUN cd /lhmodeldbutil && \
+    mkdir ./build && \
+    cd ./build && \
+    cmake3 \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+        -DCPACK_PACKAGE_DIRECTORY=/lhdist \
+    ../ && \
+    make && \
+    make test && \
+    make package && \
+    /refreshOrSetupLHDistYumRepo.sh
+
+ENV BUILD_TAG=${BUILD_TAG}
+LABEL build_tag="${BUILD_TAG}"
+ENV GIT_COMMIT=${GIT_COMMIT}
+LABEL git_commit="${GIT_COMMIT}"
+
+##################################################################################
+# STAGE 3 - the base image with additional built runtime dependencies, lhmodeldbutil 
+#           binaries and test binaries needed for running integration tests
+#           includes everything from build-env
+##################################################################################
+FROM lhmodeldbutil-build as lhmodeldbutil-test-env
+
+RUN cd /lhmodeldbutil/build && \
+    make install && \
+    ldconfig
+
+##################################################################################
+# STAGE 4 - the base image with additional built runtime dependencies and 
+#           lhmodeldbutil binaries includes nothing from build-env
+##################################################################################
+FROM lhmodeldbutil-base-env as lhmodeldbutil-main
+
+COPY --from=lhmodeldbutil-build /usr/ /usr/
+COPY --from=lhmodeldbutil-build /etc/ /etc/
+COPY --from=lhmodeldbutil-build /lhmodeldbutil/ /lhmodeldbutil/
+RUN cd /lhmodeldbutil/build && \
+    make install && \
+    make package && \
+    ldconfig && \
+    cd / && \
+    rm -rf /lhmodeldbutil
+
+##################################################################################
+# STAGE 5 - the base image with additional built runtime dependencies and 
+#           lhmodeldbutil binaries includes nothing from build-env
+##################################################################################
+FROM lhmodeldbutil-base-env as lhmodeldbutil-dist-test
+
+COPY --from=lhmodeldbutil-build /lhdist/ /lhdist/
+ADD ./modules/lhscriptutil/scripts/refreshOrSetupLHDistYumRepo.sh /refreshOrSetupLHDistYumRepo.sh
+RUN /refreshOrSetupLHDistYumRepo.sh
+RUN yum -y repo-pkgs lhdistrepo install && \
+    ldconfig && \
+    yum clean all
+
+FROM lhmodeldbutil-base-env as lhmodeldbutil-dist
+
+COPY --from=lhmodeldbutil-dist-test /lhdist/ /lhdist/

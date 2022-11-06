@@ -1,0 +1,8 @@
+[submodule "modules/lhscriptutil"]
+	path = modules/lhscriptutil
+	url = https://github.com/fbuonaro/lhscriptutil.git
+	branch = release/v/1.0.0
+[submodule "modules/lhmodel"]
+	path = modules/lhmodel
+	url = https://github.com/fbuonaro/lhmodel.git
+	branch = cpack-rpm-lhdist

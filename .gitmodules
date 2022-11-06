@@ -5,4 +5,4 @@
 [submodule "modules/lhmodel"]
 	path = modules/lhmodel
 	url = https://github.com/fbuonaro/lhmodel.git
-	branch = cpack-rpm-lhdist
+	branch = master

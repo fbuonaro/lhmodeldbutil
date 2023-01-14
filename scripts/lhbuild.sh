@@ -6,10 +6,7 @@ then
     TARGET_STAGE="dist"
 fi
 
-# lhmodel
-pushd ./modules/lhmodel
-./scripts/buildLHModelImage.sh
-popd
+./modules/lhscriptutil/scripts/buildLHDeps.sh
 
 # libcppdb
 ./scripts/buildLibCppdbLHDistImage.sh

@@ -8,5 +8,10 @@ project( lhmodeldbutil
 
 enable_testing()
 
-add_subdirectory( liblhmodeldbtest )
-add_subdirectory( liblhmodeldbutil )
+set(LH_SUBDIRECTORIES liblhmodeldbtest liblhmodeldbutil)
+
+include("modules/lhscriptutil/cmake/lhmacros.cmake")
+
+lh_toplevel_add_subdirectories()
+
+lh_toplevel_add_cpack_package_components()

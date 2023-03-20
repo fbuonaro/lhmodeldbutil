@@ -45,7 +45,7 @@ set( LH_LIB_PRIVATE_LINKLIBS )
 set( LH_LIB_PUBLIC_INCLUDES 
      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/lhmodeldbutil>   # build
      $<INSTALL_INTERFACE:${LH_INSTALL_INCDIR}> )                               # export
-set( LIB_PRIVATE_INCLUDES 
+set( LH_LIB_PRIVATE_INCLUDES 
      "${CMAKE_CURRENT_BINARY_DIR}" )
 
 lh_add_library()

@@ -25,6 +25,8 @@ set( LH_INSTALL_BINDIR "${CMAKE_INSTALL_BINDIR}" )
 set( LH_INSTALL_LIBDIR "${CMAKE_INSTALL_LIBDIR}/liblhmodeldbtest_${PROJECT_VERSION}" )
 set( LH_INSTALL_INCDIR "${CMAKE_INSTALL_INCLUDEDIR}/lhmodeldbtest_${PROJECT_VERSION}" )
 
+set( LH_LIB_NAME lhmodeldbtest )
+
 # pull in gtest
 find_package( GTest REQUIRED )
 
@@ -42,7 +44,7 @@ set( LH_LIB_PRIVATE_LINKLIBS )
 set( LH_LIB_PUBLIC_INCLUDES 
      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/lhmodeldbtest>   # build
      $<INSTALL_INTERFACE:${LH_INSTALL_INCDIR}> )                               # export
-set( LIB_PRIVATE_INCLUDES 
+set( LH_LIB_PRIVATE_INCLUDES 
      "${CMAKE_CURRENT_BINARY_DIR}" )
 
 lh_add_library()

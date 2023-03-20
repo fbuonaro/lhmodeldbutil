@@ -87,6 +87,12 @@ lh_add_pkgconfig()
 # cmake packaging
 ##############################################################
 
+lh_add_install_cmake_config()
+
+##############################################################
+# rpm packaging
+##############################################################
+ 
 # to relocate the pc file prefix to /somewhere if 'rpm --install --prefix /somewhere'
 set( CPACK_RPM_LIBLHMODELDBTEST_PACKAGE_REQUIRES_POST "sed" PARENT_SCOPE) 
 set( CPACK_RPM_LIBLHMODELDBTEST_POST_INSTALL_SCRIPT_FILE "${PC_RELOCATE_SCRIPT}" PARENT_SCOPE)

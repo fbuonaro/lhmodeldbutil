@@ -36,3 +36,5 @@
 .swagger-codegen-ignore
 .swagger-codegen/
 *.swp
+/modules/**
+!/modules/.keepdir

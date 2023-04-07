@@ -16,6 +16,7 @@ RUN yum -y --enablerepo=extras install epel-release && \
 # STAGE 1 - build tools and libraries needed to build lhmodeldbutil
 ##################################################################################
 ### deps ###
+FROM lhscriptutil:dist-${BUILD_TAG} AS lhscriptutil_dist_build
 FROM lhmodel:dist-${BUILD_TAG} AS lhmodel_dist_build
 FROM libcppdb-lhdist:dist-${BUILD_TAG} AS libcppdb_lhdist_dist_build
 ### deps ###
@@ -33,12 +34,12 @@ RUN yum -y install \
         rpm-build && \
     yum clean all
 
-ADD ./modules/lhscriptutil/scripts/refreshOrSetupLHDistYumRepo.sh /refreshOrSetupLHDistYumRepo.sh
-RUN /refreshOrSetupLHDistYumRepo.sh
+COPY --from=lhscriptutil_dist_build /lhscriptutil/ /lhscriptutil/
+RUN /lhscriptutil/scripts/refreshOrSetupLHDistYumRepo.sh
 
 COPY --from=lhmodel_dist_build /lhdist/*.rpm /lhdist/
 COPY --from=libcppdb_lhdist_dist_build /lhdist/*.rpm /lhdist/
-RUN /refreshOrSetupLHDistYumRepo.sh
+RUN /lhscriptutil/scripts/refreshOrSetupLHDistYumRepo.sh
 
 RUN yum -y repo-pkgs lhdistrepo install && \
     ldconfig && \
@@ -63,7 +64,7 @@ RUN cd /lhmodeldbutil && \
     make && \
     make test && \
     make package && \
-    /refreshOrSetupLHDistYumRepo.sh
+    /lhscriptutil/scripts/refreshOrSetupLHDistYumRepo.sh
 
 ENV BUILD_TAG=${BUILD_TAG}
 LABEL build_tag="${BUILD_TAG}"
@@ -87,29 +88,17 @@ RUN cd /lhmodeldbutil/build && \
 ##################################################################################
 FROM lhmodeldbutil-base-env as lhmodeldbutil-main
 
-COPY --from=lhmodeldbutil-build /usr/ /usr/
-COPY --from=lhmodeldbutil-build /etc/ /etc/
-COPY --from=lhmodeldbutil-build /lhmodeldbutil/ /lhmodeldbutil/
-RUN cd /lhmodeldbutil/build && \
-    make install && \
-    make package && \
+COPY --from=lhmodeldbutil-build /lhdist/ /lhdist/
+COPY --from=lhmodeldbutil-build-env /lhscriptutil/ /lhscriptutil/
+RUN /lhscriptutil/scripts/refreshOrSetupLHDistYumRepo.sh
+RUN yum -y repo-pkgs lhdistrepo install && \
     ldconfig && \
-    cd / && \
-    rm -rf /lhmodeldbutil
+    yum clean all
 
 ##################################################################################
 # STAGE 5 - the base image with additional built runtime dependencies and 
 #           lhmodeldbutil binaries includes nothing from build-env
 ##################################################################################
-FROM lhmodeldbutil-base-env as lhmodeldbutil-dist-test
-
-COPY --from=lhmodeldbutil-build /lhdist/ /lhdist/
-ADD ./modules/lhscriptutil/scripts/refreshOrSetupLHDistYumRepo.sh /refreshOrSetupLHDistYumRepo.sh
-RUN /refreshOrSetupLHDistYumRepo.sh
-RUN yum -y repo-pkgs lhdistrepo install && \
-    ldconfig && \
-    yum clean all
-
 FROM lhmodeldbutil-base-env as lhmodeldbutil-dist
 
-COPY --from=lhmodeldbutil-dist-test /lhdist/ /lhdist/
+COPY --from=lhmodeldbutil-main /lhdist/ /lhdist/

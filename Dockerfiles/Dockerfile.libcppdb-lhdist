@@ -13,7 +13,12 @@ RUN yum -y --enablerepo=extras install epel-release && \
 ##################################################################################
 # STAGE 1 - build tools and libraries needed to build libcppdb
 ##################################################################################
+### deps ###
+FROM lhscriptutil:dist-${BUILD_TAG} AS lhscriptutil_dist_build
+### deps ###
 FROM libcppdb-lhdist-base-env as libcppdb-lhdist-build-env
+
+COPY --from=lhscriptutil_dist_build /lhscriptutil/ /lhscriptutil/
 
 # for compiling and unit testing
 RUN yum -y install \
@@ -41,12 +46,11 @@ FROM libcppdb-lhdist-build-env as libcppdb-lhdist-build
 
 RUN mkdir -p /libcppdb-lhdist
 
-ADD ./modules/lhscriptutil/scripts/rpmdev-setuptree-at.sh /libcppdb-lhdist
 ADD ./dist/libcppdb-lhdist.spec /libcppdb-lhdist
 
 RUN cd /libcppdb-lhdist && \
     mkdir build && \
-    ./rpmdev-setuptree-at.sh ./build && \
+    /lhscriptutil/scripts/rpmdev-setuptree-at.sh ./build && \
     rpmbuild --define "_topdir ${PWD}/build"  -ba ./libcppdb-lhdist.spec && \
     mkdir -p /lhdist && \
     find ./build/RPMS/ | grep "\.rpm" | xargs -I{} cp -f -u {} /lhdist
@@ -61,8 +65,9 @@ LABEL git_commit="${GIT_COMMIT}"
 ##################################################################################
 FROM libcppdb-lhdist-build-env as libcppdb-lhdist-check
 
-ADD ./modules/lhscriptutil/scripts/refreshOrSetupLHDistYumRepo.sh /refreshOrSetupLHDistYumRepo.sh
-RUN /refreshOrSetupLHDistYumRepo.sh
+COPY --from=libcppdb-lhdist-build /lhdist/ /lhdist/
+COPY --from=libcppdb-lhdist-build-env /lhscriptutil/ /lhscriptutil/
+RUN /lhscriptutil/scripts/refreshOrSetupLHDistYumRepo.sh
 RUN yum -y repo-pkgs lhdistrepo install && \
     yum clean all
 
@@ -71,4 +76,4 @@ RUN yum -y repo-pkgs lhdistrepo install && \
 ##################################################################################
 FROM libcppdb-lhdist-base-env as libcppdb-lhdist-dist
 
-COPY --from=libcppdb-lhdist-build /lhdist /lhdist
+COPY --from=libcppdb-lhdist-check /lhdist /lhdist

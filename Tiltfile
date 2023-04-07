@@ -16,11 +16,12 @@ commonTilt = load_dynamic( os.path.join( gitDir, "lhscriptutil", "tilt", "common
 lhscriptutilTilt = load_dynamic( os.path.join( gitDir, "lhscriptutil", "Tiltfile") )
 lhQuickBuildImage = commonTilt[ "lhQuickBuildImage" ]
 lhQuickBuildImageNoK8 = commonTilt[ "lhQuickBuildImageNoK8" ]
+lhGitCheckoutAndLoad = commonTilt[ "lhGitCheckoutAndLoad" ]
 cfg = lhscriptutilTilt[ "cfg" ]
 ###############################################################################
 # <<< BOILERPLATE END
 ###############################################################################
-git_checkout( "git@github.com:fbuonaro/lhmodel.git#tilt" )
+lhGitCheckoutAndLoad( "git@github.com:fbuonaro/lhmodel.git#tilt", gitDir )
 
 lhQuickBuildImageNoK8( "libcppdb-lhdist", cfg, dockerfile="Dockerfiles/Dockerfile.libcppdb-lhdist" )
 

@@ -34,7 +34,7 @@ RUN yum -y install \
 RUN yum -y install rpm-devel rpmlint bash coreutils diffutils patch rpmdevtools && \
     yum -y clean all
 
-RUN yum -y install wget bzip2 && \
+RUN yum -y install wget bzip2 mariadb-libs mariadb-devel && \
     yum -y clean all
 # wget
 RUN yum -y update ca-certificates

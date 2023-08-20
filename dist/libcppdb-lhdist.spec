@@ -5,6 +5,8 @@ Version:    1
 Release:    1
 Summary:    libcppdb packaged in an RPM
 License:    See http://cppcms.com/sql/cppdb/
+BuildRequires:   mariadb-libs mariadb-devel
+Requires:   mariadb-libs mariadb-devel
 
 %description
 libcppdb packaged in an RPM
@@ -17,7 +19,7 @@ tar -xf cppdb-0.3.1.tar.bz2
 cd cppdb-0.3.1
 mkdir build
 cd build
-cmake3 -DCMAKE_INSTALL_PREFIX=/usr -DDISABLE_SQLITE=ON -DDISABLE_PQ=ON -DMYSQL_BACKEND_INTERNAL=ON ../
+cmake3 -DCMAKE_INSTALL_PREFIX=/usr -DDISABLE_SQLITE=ON -DDISABLE_PQ=ON -DMYSQL_LIB=/usr/lib64/mysql/libmysqlclient.so.18 -DMYSQL_PATH=/usr/include/mysql -DMYSQL_BACKEND_INTERNAL=ON ../
 make all
 
 %install
